@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Modal AI Platform - Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            border-radius: 8px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+        .subtitle {
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(650px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .status-healthy {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-critical {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #2c3e50;
+        }
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .info-value {
+            font-size: 1.2em;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .refresh-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: #28a745;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Multi-Modal AI Platform Performance Dashboard</h1>
+            <div class="subtitle">Real-time monitoring and performance visualization</div>
+        </header>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">System Health</div>
+                    <div id="health-status" class="status status-healthy">Healthy</div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Requests</div>
+                        <div id="total-requests" class="metric-value">0</div>
+                        <div class="metric-label">All time</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Requests/Minute</div>
+                        <div id="requests-per-minute" class="metric-value">0</div>
+                        <div class="metric-label">Current rate</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Error Rate</div>
+                        <div id="error-rate" class="metric-value">0.00%</div>
+                        <div class="metric-label">Last minute</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Uptime</div>
+                        <div id="uptime" class="metric-value">0d 0h</div>
+                        <div class="metric-label">Since last restart</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Response Time</div>
+                    <div>Last 5 minutes</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="responseTimeChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Request Volume</div>
+                    <div>Last 5 minutes</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="requestVolumeChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Error Rate</div>
+                    <div>Last 5 minutes</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="errorRateChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">System Resources</div>
+                    <div>Current usage</div>
+                </div>
+                <div class="system-info">
+                    <div class="info-item">
+                        <div class="info-title">Memory Usage</div>
+                        <div id="memory-usage" class="info-value">0 MB</div>
+                        <div class="metric-label">Of total process memory</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-title">CPU Usage</div>
+                        <div id="cpu-usage" class="info-value">0%</div>
+                        <div class="metric-label">Current process</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-title">Cache Items</div>
+                        <div id="cache-items" class="info-value">0</div>
+                        <div class="metric-label">In memory cache</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-title">Pending Tasks</div>
+                        <div id="pending-tasks" class="info-value">0</div>
+                        <div class="metric-label">Background processing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <div>Performance Dashboard • Auto-refreshing every <span id="refresh-interval">5</span> seconds 
+            <span class="refresh-indicator"></span></div>
+        </footer>
+    </div>
+
+    <script>
+        // Chart configurations
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 500
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        };
+
+        // Initialize charts
+        const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
+        const requestVolumeCtx = document.getElementById('requestVolumeChart').getContext('2d');
+        const errorRateCtx = document.getElementById('errorRateChart').getContext('2d');
+
+        const responseTimeChart = new Chart(responseTimeCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Response Time (s)',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: chartOptions
+        });
+
+        const requestVolumeChart = new Chart(requestVolumeCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Requests',
+                    data: [],
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: chartOptions
+        });
+
+        const errorRateChart = new Chart(errorRateCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Error Rate (%)',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Update charts with data
+        async function updateDashboard() {
+            try {
+                // Get metrics
+                const metricsResponse = await fetch('/api/metrics');
+                const metrics = await metricsResponse.json();
+                
+                // Update health status
+                const healthStatus = document.getElementById('health-status');
+                if (parseFloat(metrics.request_metrics.error_rate) < 1) {
+                    healthStatus.className = 'status status-healthy';
+                    healthStatus.textContent = 'Healthy';
+                } else if (parseFloat(metrics.request_metrics.error_rate) < 5) {
+                    healthStatus.className = 'status status-warning';
+                    healthStatus.textContent = 'Warning';
+                } else {
+                    healthStatus.className = 'status status-critical';
+                    healthStatus.textContent = 'Critical';
+                }
+                
+                // Update metrics
+                document.getElementById('total-requests').textContent = metrics.request_metrics.total_requests;
+                document.getElementById('requests-per-minute').textContent = metrics.request_metrics['requests_per_minute'];
+                document.getElementById('error-rate').textContent = metrics.request_metrics.error_rate;
+                document.getElementById('uptime').textContent = formatUptime(metrics.uptime_seconds);
+                
+                // Get system resources
+                const resourcesResponse = await fetch('/api/system-resources');
+                const resources = await resourcesResponse.json();
+                
+                // Update system info
+                document.getElementById('memory-usage').textContent = 
+                    resources.memory.memory_mb.toFixed(1) + ' MB';
+                document.getElementById('cpu-usage').textContent = 
+                    resources.memory.cpu_percent.toFixed(1) + '%';
+                document.getElementById('cache-items').textContent = 
+                    resources.cache_stats.item_count;
+                document.getElementById('pending-tasks').textContent = 
+                    resources.task_stats.pending_tasks;
+                
+                // Get historical data
+                const historicalResponse = await fetch('/api/historical');
+                const historical = await historicalResponse.json();
+                
+                // Update charts
+                updateChart(responseTimeChart, historical.response_times, 'value', 'Response Time (s)');
+                updateChart(requestVolumeChart, historical.requests, 'value', 'Requests');
+                updateChart(errorRateChart, historical.error_rates, 'value', 'Error Rate (%)');
+                
+            } catch (error) {
+                console.error('Error updating dashboard:', error);
+            }
+        }
+
+        function updateChart(chart, data, valueField, label) {
+            if (data.length === 0) return;
+            
+            // Extract labels and values
+            const labels = data.map(d => d.timestamp);
+            const values = data.map(d => d[valueField]);
+            
+            // Update chart
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = values;
+            chart.data.datasets[0].label = label;
+            chart.update();
+        }
+
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / (24 * 3600));
+            const hours = Math.floor((seconds % (24 * 3600)) / 3600);
+            return `${days}d ${hours}h`;
+        }
+
+        // Initial update
+        updateDashboard();
+        
+        // Set up auto-refresh
+        const refreshInterval = 5; // seconds
+        document.getElementById('refresh-interval').textContent = refreshInterval;
+        setInterval(updateDashboard, refreshInterval * 1000);
+    </script>
+</body>
+</html>

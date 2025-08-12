@@ -1,0 +1,53 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      APP_HOST: "0.0.0.0"
+      APP_PORT: "8000"
+      API_KEY: "student-api-key-123"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Start application
+        run: |
+          uvicorn backend.main:app --host ${{ env.APP_HOST }} --port ${{ env.APP_PORT }} &
+          sleep 10  # Wait for app to fully start
+      
+      - name: Run tests with coverage
+        id: test
+        run: |
+          pytest -v --cov=backend --cov-report=xml
+          echo "coverage_report=$(pwd)/coverage.xml" >> $GITHUB_OUTPUT
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ${{ steps.test.outputs.coverage_report }}
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+
+      - name: Run quality gates
+        run: |
+          pytest tests/quality_gates.py
+          
