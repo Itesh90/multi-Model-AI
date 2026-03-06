@@ -1,23 +1,35 @@
-version: '3.8'
-
 services:
   app:
     build: .
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - "${APP_PORT:-8000}:${APP_PORT:-8000}"
     environment:
+      - APP_HOST=${APP_HOST:-0.0.0.0}
+      - APP_PORT=${APP_PORT:-8000}
+      - RELOAD=${RELOAD:-false}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
       - WEAVIATE_URL=${WEAVIATE_URL}
       - WEAVIATE_API_KEY=${WEAVIATE_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - STUDENT_API_KEY=${STUDENT_API_KEY}
+      - FILEBASE_ACCESS_KEY=${FILEBASE_ACCESS_KEY}
+      - FILEBASE_SECRET_KEY=${FILEBASE_SECRET_KEY}
+      - BUCKET_NAME=${BUCKET_NAME:-multimodal-student-bucket}
+    env_file:
+      - .env
     volumes:
       - .:/app
     command: >
-      sh -c "uvicorn backend.main:app --host ${APP_HOST} --port ${APP_PORT} --reload ${RELOAD:+--reload}"
+      sh -c "if [ \"${RELOAD:-false}\" = 'true' ];
+        then uvicorn backend.main:app --host ${APP_HOST:-0.0.0.0} --port ${APP_PORT:-8000} --reload;
+        else uvicorn backend.main:app --host ${APP_HOST:-0.0.0.0} --port ${APP_PORT:-8000};
+      fi"
     depends_on:
       - weaviate
 
   weaviate:
-    image: semitechnologies/weaviate:1.19.0
+    image: semitechnologies/weaviate:1.24.0
     ports:
       - "8080:8080"
     environment:
