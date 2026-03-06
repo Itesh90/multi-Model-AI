@@ -36,6 +36,17 @@ A comprehensive multi-modal AI platform that processes text, images, audio, and 
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Open .env and fill in your actual credentials (see Configuration section below)
+   ```
+
 ### Phase 2: Cloud Services Setup
 
 1. **Google Cloud Storage Setup**
@@ -50,6 +61,7 @@ A comprehensive multi-modal AI platform that processes text, images, audio, and 
    - Note your cluster URL and API key
 
 3. **Update environment variables**
+   Edit the `.env` file (created in Phase 1 step 4) with your cloud service credentials:
    ```env
    # API Configuration
    API_HOST=localhost
@@ -71,6 +83,22 @@ A comprehensive multi-modal AI platform that processes text, images, audio, and 
    OPENAI_API_KEY=your_openai_api_key
    MODEL_CONFIG_PATH=config/models.json
    ```
+
+## 🐳 Docker Setup
+
+```bash
+# 1. Copy and configure environment
+cp .env.example .env
+# Edit .env with your credentials
+
+# 2. Build and start all services
+docker compose up --build
+
+# 3. Access the API
+#    Swagger UI: http://localhost:8000/docs
+```
+
+To enable auto-reload during development, set `RELOAD=true` in your `.env`.
 
 ## 🏃‍♂️ Quick Start
 
@@ -129,8 +157,10 @@ multi Model AI/
 ├── config/
 │   └── models.json          # AI model configurations
 ├── requirements.txt         # Python dependencies
+├── Dockerfile               # Container image build file
+├── docker-compose.yml       # Multi-service container orchestration
 ├── README.md               # This file
-├── .env.example            # Environment variables template
+├── .env.example            # Environment variables template (copy to .env)
 └── .gitignore              # Git ignore rules
 ```
 
@@ -138,33 +168,40 @@ multi Model AI/
 
 ### Environment Variables
 
-Create a `.env` file with the following variables:
+Copy `.env.example` to `.env` and fill in your values. **Never commit the `.env` file** — it is excluded by `.gitignore`.
+
+```bash
+cp .env.example .env
+```
+
+Key variables:
 
 ```env
-# API Configuration
-API_HOST=localhost
-API_PORT=8000
-DEBUG=True
+# Application
+APP_HOST=0.0.0.0
+APP_PORT=8000
+RELOAD=false
+ENVIRONMENT=development
 
-# Database
-DATABASE_URL=sqlite:///./app.db
-
-# Cloud Storage
-GCS_BUCKET_NAME=multimodal-student-storage
-GCS_KEY_PATH=./gcs-key.json
+# Security
+SECRET_KEY=your-secret-key-here
+STUDENT_API_KEY=student-api-key-123
 
 # Weaviate Vector Database
 WEAVIATE_URL=https://your-cluster.weaviate.network
 WEAVIATE_API_KEY=your-api-key
 
-# AI Model Configuration
+# AI Model APIs
 OPENAI_API_KEY=your_openai_api_key
-MODEL_CONFIG_PATH=config/models.json
+OPENROUTER_API_KEY=your_openrouter_api_key   # optional
 
-# Security
-SECRET_KEY=your-secret-key-here
-API_KEY=student-api-key-123
+# Filebase / S3 Storage
+FILEBASE_ACCESS_KEY=your-access-key
+FILEBASE_SECRET_KEY=your-secret-key
+BUCKET_NAME=multimodal-student-bucket
 ```
+
+See `.env.example` for a complete list of all supported variables with descriptions.
 
 ### Model Configuration
 

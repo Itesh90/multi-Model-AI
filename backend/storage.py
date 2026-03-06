@@ -17,9 +17,9 @@ class FilebaseStorage:
             bucket_name: Name for your storage bucket (must be globally unique)
         """
         # Get credentials from environment variables
-        access_key = os.getenv('068004E9D0BE3AECE1E7')
-        secret_key = os.getenv('dMvlaq4pdisOwZqs37kKTldybXZGpQr15ky1x29V')
-        
+        access_key = os.getenv('FILEBASE_ACCESS_KEY')
+        secret_key = os.getenv('FILEBASE_SECRET_KEY')
+
         if not access_key or not secret_key:
             raise ValueError(
                 "FILEBASE_ACCESS_KEY and FILEBASE_SECRET_KEY must be set in environment variables. "
